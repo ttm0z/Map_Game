@@ -5,7 +5,18 @@
 WindowManager::WindowManager(int width, int height, int gridSize, std::vector<std::vector<int>> map) : 
 screenWidth(width), screenHeight(height), gridSize(gridSize), 
 window(nullptr), renderer(nullptr), gridMap(map) {
+    // print the grid map
+        std::cout<<"Grid Map Size: " << gridMap.size() << ", " << gridMap[0].size() <<std::endl;
+        std::cout<<"Grid Size: " << gridSize << std::endl; 
+        std::cout<<"width: " << screenWidth << std::endl; 
+        std::cout<<"height: " << screenHeight << std::endl;
+        std::cout<<"#cells X: " << (double)screenWidth / gridSize << std::endl; 
+        std::cout<<"#cells Y: " << (double)screenHeight / gridSize << std::endl; 
+
 }
+
+        
+
 
 WindowManager::~WindowManager() {
     close();
@@ -38,23 +49,18 @@ void WindowManager::render() {
     SDL_RenderClear(renderer);
     drawGrid();
 
-    // Render additional content here
-    
-    
-    int cellWidth = screenWidth / gridSize;
-    int cellHeight = screenHeight / gridSize;
+    double cellWidth = (double)screenWidth / gridSize;
+    double cellHeight = (double)screenHeight / gridSize;
     for (int y = 0; y < gridSize; ++y) {
         for (int x = 0; x < gridSize; ++x) {
             // Calculate cell position
-            SDL_Rect cellRect = {x * cellWidth, y * cellHeight, cellWidth, cellHeight};
+            SDL_Rect cellRect = {(double)x * cellWidth, (double)y * cellHeight, cellWidth, cellHeight};
             // Set color based on value (example: alternate between red and blue)
             if (gridMap[y][x] > 0){
                 SDL_SetRenderDrawColor(renderer, 0, 100, 0, 255);
             }
             else SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);    
 
-
-            
             // Render cell
             SDL_RenderFillRect(renderer, &cellRect);
         }
@@ -65,11 +71,15 @@ void WindowManager::render() {
 
 
 void WindowManager::drawGrid(){
+
+    int grid_x = screenWidth / gridSize;
+    int grid_y = screenHeight / gridSize;
+
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
-    for (int x = 0; x < screenWidth; x += screenWidth / gridSize) {
+    for (int x = 0; x < screenWidth; x += grid_x) {
         SDL_RenderDrawLine(renderer, x, 0, x, screenHeight);
     }
-    for (int y = 0; y < screenHeight; y += screenHeight / gridSize) {
+    for (int y = 0; y < screenHeight; y += grid_y) {
         SDL_RenderDrawLine(renderer, 0, y, screenWidth, y);
     }
 }
