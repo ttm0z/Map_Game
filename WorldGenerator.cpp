@@ -1,4 +1,5 @@
 #include "WorldGenerator.h"
+#include "CellularAutomataMap.h"
 #include <iostream>
 #include <iomanip> // For std::setw
 #include <algorithm> // For std::find
@@ -10,134 +11,21 @@ WorldGenerator::WorldGenerator() {
 }
 
 void WorldGenerator::generateWorld() {
+    
+    // seed values for CA
+    const int iterations = 5;
+    const float chanceToStartAlive = 0.4f;
+    
     // determine grid size
     grid_size = worldSize * 160;
-    plateMap.resize(grid_size, std::vector<int>(grid_size, 0));
+    worldMap.resize(grid_size, std::vector<bool>(grid_size, 0));
+
+    CellularAutomata automata(grid_size, grid_size);
 
     std::cout << "World Generation Algorithm" << std::endl;
     std::cout << "World Size (Earth Masses): "<< worldSize << std::endl;
+    worldMap = automata.generateMap(iterations, chanceToStartAlive);
 
-    // determine number of continents
-    int numContinents = 7 * grid_size / 25;
-    std::cout<<"Number of Continents: " << numContinents << std::endl;
-
-    // generate the highest points (centers) of each continent
-    std::vector<Cell> continents;
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<int> dis(3, grid_size - 3);
-    std::uniform_int_distribution<int> prob(0, 1);
-
-    while (continents.size() < numContinents) {
-        //generate new continent
-        int x = dis(gen);
-        int y = dis(gen);
-        Cell newContinent = {x, y};
-
-        // check for proximity to other continents
-        bool tooClose = false;
-        for (const Cell& continent : continents) {
-            if (manhattanDistance(newContinent, continent) <= 5) {
-                tooClose = true;
-                break;
-            }
-        }
-        if (!tooClose) {
-            continents.push_back({x, y});
-        }
-    }
-
-    // place continents on map
-    for (int i = 1; i < numContinents + 1; i++) {
-        Cell cont = continents[i - 1];
-        plateMap[cont.x][cont.y] = i;
-    }
-
-
-    std::uniform_int_distribution<> w(1, 10);
-    // grow each continent in all 4 directions
-    for (int i = 0; i < continents.size(); i++) {
-        int x = continents[i].x;
-        int y = continents[i].y;
-
-        // generate a random integer in each direction
-        int dn = w(gen);
-        int de = w(gen);
-
-        // determine dimensions
-        for(int i = 1; i<dn; i++){
-            for(int j = 1; j<de; j++){
-                
-                bool edge = false;
-                
-                if ( i+1 == dn || j+1 == de){
-                    edge = true;
-                }
-                
-                if (x-i > 0){
-                    plateMap[x - i][y] = plateMap[x][y];
-                    if(edge && std::rand() % 2 == 0){
-                        plateMap[x - i][y] = 0;
-                    }
-                }
-                
-                if (x+i < grid_size){
-                    plateMap[x + i][y] = plateMap[x][y];
-                    if(edge && std::rand() % 2 == 0){
-                        plateMap[x + i][y] = 0;
-                    }
-                }
-                
-                if (y - j > 0){
-                    plateMap[x][y - j] = plateMap[x][y];
-                    if(edge && std::rand() % 2 == 0){
-                        plateMap[x][y - j] = 0;
-                    }
-                }
-                
-                if (y + j < grid_size){
-                    plateMap[x][y + j] = plateMap[x][y]; 
-                    if(edge && std::rand() % 2 == 0){
-                        plateMap[x][y + j] = 0;
-                    }
-                }
-                
-
-                if (y + j < grid_size && x + i < grid_size){
-                    plateMap[x + i][y + j] = plateMap[x][y];    
-                    if(edge && std::rand() % 2 == 0){
-                        plateMap[x + i][y + j] = 0;
-                    }
-                }
-
-                if (x + i < grid_size && y - j > 0){
-                    plateMap[x + i][y - j] = plateMap[x][y];    
-                    if(edge && std::rand() % 2 == 0){
-                        plateMap[x + i][y - j] = 0;
-                    }
-                }
-
-                if (x - i > 0 && y + j < grid_size){
-                    plateMap[x - i][y + j] = plateMap[x][y];    
-                    if(edge && std::rand() % 2 == 0){
-                        plateMap[x - i][y + j] = 0;
-                    }
-                }
-
-                if (y - j > 0 && x - i > 0){
-                    plateMap[x - i][y - j] = plateMap[x][y];       
-                    if(edge && std::rand() % 2 == 0){
-                        plateMap[x - i][y - j] = 0;
-                    }
-                }
-                
-            }
-
-                
-        }
-
-        //fill in
-    }
 
 }
 
@@ -168,8 +56,8 @@ double WorldGenerator::generateWorldSize(double mean, double std_dev, double min
     return result;
 }
 
-std::vector<std::vector<int>> WorldGenerator::getMap(){
-    return plateMap;
+std::vector<std::vector<bool>> WorldGenerator::getMap(){
+    return worldMap;
 }
 
 

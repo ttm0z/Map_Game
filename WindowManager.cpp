@@ -1,10 +1,13 @@
 #include "WindowManager.h"
+#include "Camera.h"
 #include <iostream>
 #include <vector>
+#include <algorithm>
 
-WindowManager::WindowManager(int width, int height, int gridSize, std::vector<std::vector<int>> map) : 
+WindowManager::WindowManager(int width, int height, int gridSize, std::vector<std::vector<bool>> map) : 
 screenWidth(width), screenHeight(height), gridSize(gridSize), 
 window(nullptr), renderer(nullptr), gridMap(map) {
+    
     // print the grid map
         std::cout<<"Grid Map Size: " << gridMap.size() << ", " << gridMap[0].size() <<std::endl;
         std::cout<<"Grid Size: " << gridSize << std::endl; 
@@ -14,9 +17,6 @@ window(nullptr), renderer(nullptr), gridMap(map) {
         std::cout<<"#cells Y: " << (double)screenHeight / gridSize << std::endl; 
 
 }
-
-        
-
 
 WindowManager::~WindowManager() {
     close();
@@ -44,30 +44,44 @@ bool WindowManager::init() {
     return true;
 }
 
-void WindowManager::render() {
+void WindowManager::render(const Camera& camera) {
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderClear(renderer);
     drawGrid();
 
     double cellWidth = (double)screenWidth / gridSize;
     double cellHeight = (double)screenHeight / gridSize;
-    for (int y = 0; y < gridSize; ++y) {
-        for (int x = 0; x < gridSize; ++x) {
+    int cameraX = camera.getX();
+    int cameraY = camera.getY();
+
+    // Calculate visible range of cells based on camera position
+    int startX = cameraX / cellWidth;
+    int startY = cameraY / cellHeight;
+    int endX = std::min<int>(static_cast<int>(gridMap[0].size()), static_cast<int>((cameraX + screenWidth) / cellWidth) + 1);
+    int endY = std::min<int>(static_cast<int>(gridMap.size()), static_cast<int>((cameraY + screenHeight) / cellHeight) + 1);
+
+    // Render visible portion of the map
+    for (int y = startY; y < endY; ++y) {
+        for (int x = startX; x < endX; ++x) {
             // Calculate cell position
-            SDL_Rect cellRect = {(double)x * cellWidth, (double)y * cellHeight, cellWidth, cellHeight};
-            // Set color based on value (example: alternate between red and blue)
-            if (gridMap[y][x] > 0){
+            SDL_Rect cellRect = { static_cast<int>((x - startX) * cellWidth), static_cast<int>((y - startY) * cellHeight), static_cast<int>(cellWidth), static_cast<int>(cellHeight) };
+
+            if (gridMap[y][x]) {
                 SDL_SetRenderDrawColor(renderer, 0, 100, 0, 255);
             }
-            else SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);    
+            else {
+                SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+            }
 
             // Render cell
             SDL_RenderFillRect(renderer, &cellRect);
         }
     }
-    SDL_RenderPresent(renderer);
 
+    SDL_RenderPresent(renderer);
 }
+
+
 
 
 void WindowManager::drawGrid(){

@@ -5,6 +5,8 @@
 #include <iostream>
 #include <vector>
 
+#include "Camera.h"
+
 class WindowManager {
 private:
     SDL_Window* window;
@@ -12,14 +14,14 @@ private:
     int screenWidth;
     int screenHeight;
     int gridSize;
-    std::vector<std::vector<int>> gridMap;
+    std::vector<std::vector<bool>> gridMap;
 
 public:
-    WindowManager(int width, int height, int gridSize, std::vector<std::vector<int>> map);
+    WindowManager(int width, int height, int gridSize, std::vector<std::vector<bool>> map);
     ~WindowManager();
 
     bool init();
-    void render();
+    void render(const Camera& camera);
     void close();
     void drawGrid();
     int getScreenWidth() const;

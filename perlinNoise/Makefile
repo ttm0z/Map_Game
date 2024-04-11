@@ -1,5 +1,5 @@
 
-OBJS = Game.cpp WorldGenerator.cpp WindowManager.cpp CellularAutomataMap.cpp Camera.cpp
+OBJS = PerlinNoiseMap.cpp
 
 CC = g++
 

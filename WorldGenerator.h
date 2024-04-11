@@ -13,7 +13,7 @@ class WorldGenerator {
 private:
     double worldSize;
     int grid_size;
-    std::vector<std::vector<int>> plateMap;
+    std::vector<std::vector<bool>> worldMap;
 
 public:
     WorldGenerator();
@@ -22,7 +22,7 @@ public:
     double generateWorldSize(double mean, double std_dev, double min_val, double max_val);
     int generatePlates();
     int getGridSize();
-    std::vector<std::vector<int>> getMap();
+    std::vector<std::vector<bool>> getMap();
 };
 
 #endif
